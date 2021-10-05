@@ -210,7 +210,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 		DSI_DEBUG("[%d] seamless pre-enable\n", c_bridge->id);
 		return;
 	}
-
+        pr_info("[drm] dsi_display_prepare start\n");
 	SDE_ATRACE_BEGIN("dsi_display_prepare");
 	rc = dsi_display_prepare(c_bridge->display);
 	if (rc) {
@@ -220,8 +220,11 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 		return;
 	}
 	SDE_ATRACE_END("dsi_display_prepare");
+	pr_info("[drm] dsi_display_prepare end\n");
 
 	SDE_ATRACE_BEGIN("dsi_display_enable");
+	pr_info("[drm] dsi_display_enable start\n");
+
 	rc = dsi_display_enable(c_bridge->display);
 	if (rc) {
 		DSI_ERR("[%d] DSI display enable failed, rc=%d\n",
@@ -229,6 +232,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 		(void)dsi_display_unprepare(c_bridge->display);
 	}
 	SDE_ATRACE_END("dsi_display_enable");
+	pr_info("[drm] dsi_display_enable end\n");
 
 	rc = dsi_display_splash_res_cleanup(c_bridge->display);
 	if (rc)
