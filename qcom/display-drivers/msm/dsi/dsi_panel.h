@@ -87,6 +87,7 @@ enum dsi_backlight_type {
 	DSI_BACKLIGHT_DCS,
 	DSI_BACKLIGHT_DUMMY,
 	DSI_BACKLIGHT_EXTERNAL,
+	DSI_BACKLIGHT_I2C,
 	DSI_BACKLIGHT_UNKNOWN,
 	DSI_BACKLIGHT_MAX,
 };
@@ -187,6 +188,7 @@ struct dsi_backlight_config {
 	/* WLED params */
 	struct led_trigger *wled;
 	struct backlight_device *raw_bd;
+	struct backlight_device *i2c_bd;
 
 	/* DCS params */
 	bool lp_mode;

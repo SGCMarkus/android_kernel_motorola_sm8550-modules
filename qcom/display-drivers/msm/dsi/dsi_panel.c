@@ -916,6 +916,20 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 	case DSI_BACKLIGHT_PWM:
 		rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
 		break;
+	case DSI_BACKLIGHT_I2C:
+		if (panel->rgb_left_led_node)
+			isl97900_led_event(panel->rgb_left_led_node,
+					0, bl_lvl);
+
+		if (panel->rgb_right_led_node)
+			isl97900_led_event(panel->rgb_right_led_node,
+					0, bl_lvl);
+
+		if (!(bl->i2c_bd))
+			bl->i2c_bd = backlight_device_get_by_type(BACKLIGHT_PLATFORM);
+		else
+			rc = backlight_device_set_brightness(bl->i2c_bd, bl_lvl);
+		break;
 	default:
 		DSI_ERR("Backlight type(%d) not supported\n", bl->type);
 		rc = -ENOTSUPP;
@@ -928,6 +942,7 @@ static u32 dsi_panel_get_brightness(struct dsi_backlight_config *bl)
 {
 	u32 cur_bl_level;
 	struct backlight_device *bd = bl->raw_bd;
+	struct backlight_device *i2c_bd = bl->i2c_bd;
 
 	/* default the brightness level to 50% */
 	cur_bl_level = bl->bl_max_level >> 1;
@@ -941,6 +956,10 @@ static u32 dsi_panel_get_brightness(struct dsi_backlight_config *bl)
 	case DSI_BACKLIGHT_DCS:
 	case DSI_BACKLIGHT_EXTERNAL:
 	case DSI_BACKLIGHT_PWM:
+	case DSI_BACKLIGHT_I2C:
+		if (i2c_bd && i2c_bd->ops && i2c_bd->ops->get_brightness)
+			cur_bl_level = i2c_bd->ops->get_brightness(i2c_bd);
+		break;
 	default:
 		/*
 		 * Ideally, we should read the backlight level from the
@@ -1361,6 +1380,8 @@ static int dsi_panel_bl_register(struct dsi_panel *panel)
 	case DSI_BACKLIGHT_PWM:
 		rc = dsi_panel_pwm_register(panel);
 		break;
+	case DSI_BACKLIGHT_I2C:
+		break;
 	default:
 		DSI_ERR("Backlight type(%d) not supported\n", bl->type);
 		rc = -ENOTSUPP;
@@ -1389,6 +1410,8 @@ static int dsi_panel_bl_unregister(struct dsi_panel *panel)
 	case DSI_BACKLIGHT_EXTERNAL:
 		break;
 	case DSI_BACKLIGHT_PWM:
+		break;
+	case DSI_BACKLIGHT_I2C:
 		break;
 	default:
 		DSI_ERR("Backlight type(%d) not supported\n", bl->type);
@@ -3248,6 +3271,8 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 		panel->bl_config.type = DSI_BACKLIGHT_DUMMY;
 	} else if (!strcmp(bl_type, "bl_ctrl_external")) {
 		panel->bl_config.type = DSI_BACKLIGHT_EXTERNAL;
+	} else if (!strcmp(bl_type, "bl_ctrl_i2c")) {
+		panel->bl_config.type = DSI_BACKLIGHT_I2C;
 	} else {
 		DSI_DEBUG("[%s] bl-pmic-control-type unknown-%s\n",
 			 panel->name, bl_type);
