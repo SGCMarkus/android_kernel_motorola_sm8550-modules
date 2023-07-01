@@ -1151,8 +1151,7 @@ static int dsi_display_cmd_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	cmd->last_command = (cmd_buf[1] == 1);
 	cmd->msg.channel = cmd_buf[2];
 	cmd->msg.flags = cmd_buf[3];
-	cmd->msg.ctrl = 0;
-	cmd->post_wait_ms = cmd->msg.wait_ms = cmd_buf[4];
+	cmd->post_wait_ms = cmd_buf[4];
 	cmd->msg.tx_len = ((cmd_buf[5] << 8) | (cmd_buf[6]));
 
 	if (cmd->msg.tx_len > payload_len) {
@@ -1160,9 +1159,6 @@ static int dsi_display_cmd_prepare(const char *cmd_buf, u32 cmd_buf_len,
 		       cmd->msg.tx_len, payload_len);
 		return -EINVAL;
 	}
-
-	if (cmd->last_command)
-		cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 
 	for (i = 0; i < cmd->msg.tx_len; i++)
 		payload[i] = cmd_buf[7 + i];
@@ -1286,7 +1282,6 @@ static int dsi_display_dispUtil_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	cmd->msg.type = tx_data_type;
 	cmd->msg.channel =  0;
 	cmd->last_command = 1;
-	cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 
 	/* DISPUTIL_CMD_TYPE = 1 for DSI write cmd
 	 * DISPUTIL_CMD_TYPE = 0 for DSI read cmd */
@@ -1307,7 +1302,6 @@ static int dsi_display_dispUtil_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	if (cmd_buf[DISPUTIL_CMD_XFER_MODE] == DISPUTIL_DSI_LP_MODE)
 		cmd->msg.flags |= MIPI_DSI_MSG_USE_LPM;
 
-	cmd->msg.ctrl = 0;
 	cmd->post_wait_ms = 0;
 
 	/*
@@ -1513,8 +1507,7 @@ static int dsi_display_read_elvss_status(struct dsi_display_ctrl *ctrl,
 	cmds.last_command = (data[1] == 1 ? true : false);
 	cmds.msg.channel = data[2];
 	cmds.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmds.msg.ctrl = 0;
-	cmds.post_wait_ms = cmds.msg.wait_ms = data[4];
+	cmds.post_wait_ms = data[4];
 	cmds.msg.tx_len = ((data[5] << 8) | (data[6]));
 
 	size = cmds.msg.tx_len * sizeof(u8);
@@ -1540,7 +1533,6 @@ static int dsi_display_read_elvss_status(struct dsi_display_ctrl *ctrl,
 		  DSI_CTRL_CMD_CUSTOM_DMA_SCHED);
 
 	if (cmds.last_command) {
-		cmds.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 		flags |= DSI_CTRL_CMD_LAST_COMMAND;
 	}
 	cmds.msg.rx_buf = &elvss_val;

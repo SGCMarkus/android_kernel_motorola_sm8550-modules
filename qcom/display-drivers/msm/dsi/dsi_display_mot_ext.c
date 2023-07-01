@@ -1510,8 +1510,7 @@ int mot_nt37701A_display_read_cellid(struct dsi_display_ctrl *ctrl,
 	cmds.last_command = (data[1] == 1 ? true : false);
 	cmds.msg.channel = data[2];
 	cmds.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmds.msg.ctrl = 0;
-	cmds.post_wait_ms = cmds.msg.wait_ms = data[4];
+	cmds.post_wait_ms = data[4];
 	cmds.msg.tx_len = ((data[5] << 8) | (data[6]));
 
 	size = cmds.msg.tx_len * sizeof(u8);

@@ -988,14 +988,6 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 		rc = dsi_panel_update_pwm_backlight(panel, bl_lvl);
 		break;
 	case DSI_BACKLIGHT_I2C:
-		if (panel->rgb_left_led_node)
-			isl97900_led_event(panel->rgb_left_led_node,
-					0, bl_lvl);
-
-		if (panel->rgb_right_led_node)
-			isl97900_led_event(panel->rgb_right_led_node,
-					0, bl_lvl);
-
 		if (!(bl->i2c_bd))
 			bl->i2c_bd = backlight_device_get_by_type(BACKLIGHT_PLATFORM);
 		else
@@ -1119,7 +1111,6 @@ error:
 	return rc;
 }
 
->>>>>>> 32da8579... Increase the delay processing of interface commands
 static int dsi_panel_send_param_cmd(struct dsi_panel *panel,
                                 struct msm_param_info *param_info)
 {
@@ -4902,7 +4893,6 @@ static int dsi_panel_get_pwr_mode(struct dsi_panel *panel, u8 *val)
 
 	cmd.msg.type = MIPI_DSI_DCS_READ;
 	cmd.last_command = 1;
-	cmd.msg.flags = MIPI_DSI_MSG_LASTCOMMAND;
 	cmd.msg.channel = 0;
 
 	cmd.msg.tx_len = 1;
@@ -6159,9 +6149,6 @@ static int dsi_panel_tx_cmd_set_elvss(struct dsi_panel *panel,
 			cmds->msg.flags |= MIPI_DSI_MSG_USE_LPM;
 			cmd_elv.msg.flags |= MIPI_DSI_MSG_USE_LPM;
 		}
-		if (cmds->last_command) {
-			cmds->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
-		}
 
 		if (i == 3  && (cmd_elv_set == 1)) {
 			len = ops->transfer(panel->host, &cmd_elv.msg);
@@ -6249,7 +6236,6 @@ int dsi_panel_parse_elvss_config(struct dsi_panel *panel, u8 elv_vl)
 	cmd_elv.last_command = (data[1] == 1 ? true : false);
 	cmd_elv.msg.channel = data[2];
 	cmd_elv.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmd_elv.msg.ctrl = 0;
 	cmd_elv.post_wait_ms = data[4];
 	cmd_elv.msg.tx_len = ((data[5] << 8) | data[6]);
 
@@ -6257,9 +6243,6 @@ int dsi_panel_parse_elvss_config(struct dsi_panel *panel, u8 elv_vl)
 	payload_elvss[1] = elv_vl & 0x7F;
 	cmd_elv.msg.tx_buf = payload_elvss;
 
-	if (cmd_elv.last_command) {
-		cmd_elv.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
-	}
 	cmd_elv_set = 1;
 	return 0;
 }
