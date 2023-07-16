@@ -259,7 +259,7 @@ int sde_dsc_populate_dsc_config(struct drm_dsc_config *dsc, int scr_ver) {
 		if (scr_ver == 0x1)
 			dsc->first_line_bpg_offset = 15;
 		else
-			dsc->first_line_bpg_offset = 12;
+			dsc->first_line_bpg_offset = 13;
 	} else if (dsc->dsc_version_minor == 0x2) {
 		dsc->first_line_bpg_offset = _get_dsc_v1_2_bpg_offset(dsc);
 	}
